@@ -1,8 +1,11 @@
+import random
+
 from random import randint
 
 player = {}
 game_map = []
 fog = []
+day=0
 
 MAP_WIDTH = 0
 MAP_HEIGHT = 0
@@ -97,6 +100,7 @@ def show_main_menu():
 def show_town_menu():
     print()
     # TODO: Show Day
+    print("DAY {:}".format(day))
     print("----- Sundrop Town -----")
     print("(B)uy stuff")
     print("See Player (I)nformation")
@@ -118,5 +122,18 @@ print("  and live happily ever after?")
 print("-----------------------------------------------------------")
 
 # TODO: The game!
-    
-    
+
+show_main_menu()
+choice=input("Youe choice? ").strip().lower()
+while True:
+    if choice=="n":
+        name=input("Greetings,miner!What is your Name?")
+        print("Pleased to meet you,{:}. Welcome to Sundrop Town!".format(name))
+        day+=1
+        show_town_menu()
+    elif choice=="l":
+        load_game()
+    elif choice=="q":
+        break
+    else:
+        print("Invalid input.")
