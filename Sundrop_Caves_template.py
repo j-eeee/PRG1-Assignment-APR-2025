@@ -1,5 +1,3 @@
-import random
-
 from random import randint
 
 player = {}
@@ -32,7 +30,11 @@ def load_map(filename, map_struct):
     map_struct.clear()
     
     # TODO: Add your map loading code here
-    
+    with open(filename,'r')as map_file:
+        for line in map_file:
+            line=line.strip()
+            if line:
+                map_struct.append(list(line))
     MAP_WIDTH = len(map_struct[0])
     MAP_HEIGHT = len(map_struct)
 
@@ -47,7 +49,8 @@ def initialize_game(game_map, fog, player):
     load_map("level1.txt", game_map)
 
     # TODO: initialize fog
-    
+    for _ in range(MAP_HEIGHT):
+        fog.append([True]*MAP_WIDTH)
     # TODO: initialize player
     #   You will probably add other entries into the player dictionary
     player['x'] = 0
@@ -56,7 +59,7 @@ def initialize_game(game_map, fog, player):
     player['silver'] = 0
     player['gold'] = 0
     player['GP'] = 0
-    player['day'] = 0
+    player['day'] = 1
     player['steps'] = 0
     player['turns'] = TURNS_PER_DAY
 
@@ -100,7 +103,7 @@ def show_main_menu():
 def show_town_menu():
     print()
     # TODO: Show Day
-    print("DAY {:}".format(day))
+    print("DAY {:}".format(player['day']))
     print("----- Sundrop Town -----")
     print("(B)uy stuff")
     print("See Player (I)nformation")
@@ -124,16 +127,24 @@ print("-----------------------------------------------------------")
 # TODO: The game!
 
 show_main_menu()
-choice=input("Youe choice? ").strip().lower()
+choice1=input("Youe choice? ").strip().lower()
 while True:
-    if choice=="n":
+    if choice1=="n":
         name=input("Greetings,miner!What is your Name?")
         print("Pleased to meet you,{:}. Welcome to Sundrop Town!".format(name))
-        day+=1
-        show_town_menu()
-    elif choice=="l":
+        initialize_game(game_map,fog,player)
+        while True:
+            show_town_menu()
+            choice2=input("Your choice? ").strip().lower()
+            if choice2=="b":
+                print("------------------------Shop Menu------------------------")
+                print("(P)ickaxe upage to Level 2 to mine silver ore for 50GP")
+                print("Backpack uprade to carry 12 times for 20 GP")
+                print("---------------------------------------------------------")
+                randint()
+    elif choice1=="l":
         load_game()
-    elif choice=="q":
+    elif choice1=="q":
         break
     else:
         print("Invalid input.")
