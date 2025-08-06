@@ -128,9 +128,21 @@ def show_information(player):
 
 # This function saves the game
 def save_game(game_map, fog, player):
-    # save map
+    with open("savefile.txt",'w') as f:
+    # save map  
+        for row in game_map:
+            print("".join(row),file=f)
+        print("",file=f) #blank line
     # save fog
+        for row in fog:
+            line=""
+            for cell in row:
+                line+="1" if cell else"0"
+            print(line,file=f)
     # save player
+    load_amt=player.get('copper',0)+player.get('silver',0)+player.get('gold',0)
+    print(player['name'],player['x'],player['y'],player['GP'],
+          player['steps'],load_amt,player['capacity'],sep=",",file=f)
     return
         
 # This function loads the game
@@ -189,6 +201,7 @@ def sell_ore(player):
     print("GP: {:}".format(player['GP']))
 while True:
     show_main_menu()
+    day+=1
     choice1=input("Youe choice? ").strip().lower()
     if choice1=="n":
         name=input("Greetings,miner!What is your Name?")
@@ -204,7 +217,7 @@ while True:
                     if pickaxe_lvl==1:
                         print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50GP")
                     elif pickaxe_lvl==2:
-                        print("(P)ickaxe upgrade to Level 3 to mine silver ore for 150GP")
+                        print("(P)ickaxe upgrade to Level 3 to mine gold ore for 150GP")
                     elif pickaxe_lvl>=3:
                         print("(P)ickaxe is at max level.")
                     
@@ -239,10 +252,64 @@ while True:
                         print("Invalid choice")
             elif choice2=='i':
                 show_information(player)
+            elif choice2=='v':
+                save_game(game_map, fog, player)
+                print("Game saved.")
             elif choice2=='q':
                 break
     elif choice1=="l":
         load_game(game_map,fog,player)
+        print("Game loaded successfully!")
+        while True:
+            show_town_menu()
+            choice2 = input("Your choice? ").strip().lower()
+            if choice2=="b":
+                while True:
+                    print("------------------------Shop Menu------------------------")
+                    pickaxe_lvl=player['pickaxe']
+                    if pickaxe_lvl==1:
+                        print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50GP")
+                    elif pickaxe_lvl==2:
+                        print("(P)ickaxe upgrade to Level 3 to mine gold ore for 150GP")
+                    elif pickaxe_lvl>=3:
+                        print("(P)ickaxe is at max level.")
+                    
+                    cap=player.get("capacity",10)
+                    upgrade_cost=cap*2
+                    print("(B)ackpack upgrade to carry {:} items for {:} GP".format(cap+2,upgrade_cost))
+                    print("(L)eave shop")
+                    print("---------------------------------------------------------")
+                    sell_ore(player)
+                    choice3=input("Your choice? ").strip().lower()
+                    if choice3=='p':
+                        if pickaxe_lvl==1 and player['GP']>=50:
+                            player['GP']-=50
+                            player['pickaxe']=2
+                            print("Congratulations!You can now mine silver!")
+                        elif player.get('pickaxe',1)==2 and player['GP']>=150:
+                            player['GP']-=150
+                            player['pickaxe']=3
+                            print("Congratulations!You can now mine gold!")
+                        else:
+                            print("Not enough GP")
+                    elif choice3=="b":
+                        if player['GP']>=upgrade_cost:
+                            player['GP']-=upgrade_cost
+                            player['capacity']=cap+2
+                            print("Congratulations! You can now carry {:} items!".format(cap+2))
+                        else:
+                            print("Not enough GP.")
+                    elif choice3=="l":
+                        break
+                    else:
+                        print("Invalid choice")
+            elif choice2=='i':
+                show_information(player)
+            elif choice2=='v':
+                save_game(game_map, fog, player)
+                print("Game saved.")
+            elif choice2=='q':
+                break
     elif choice1=="q":
         break
     else:
