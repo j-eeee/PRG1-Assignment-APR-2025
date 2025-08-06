@@ -42,6 +42,10 @@ def load_map(filename, map_struct):
 
 # This function clears the fog of war at the 3x3 square around the player
 def clear_fog(fog, player):
+    x,y=player['x'],player['y']
+    for i in range(max(0,y-1),min(MAP_HEIGHT,y+2)):
+        for j in range(max(0,x-1),min(MAP_WIDTH,x+2)):
+            fog[i][j]=False
     return
 
 def initialize_game(game_map, fog, player,name):
@@ -71,10 +75,39 @@ def initialize_game(game_map, fog, player,name):
     
 # This function draws the entire map, covered by the fof
 def draw_map(game_map, fog, player):
+    for y in range(MAP_HEIGHT):
+        row=""
+        for x in range(MAP_WIDTH):
+            if x==player['x'] and y == player['y']:
+                row += "M"
+            elif fog[y][x]:
+                row+="#"
+            else:
+                row+=game_map[y][x]
+        print(row)     
     return
 
 # This function draws the 3x3 viewport
 def draw_view(game_map, fog, player):
+    px=player['x']
+    py=player['y']
+    
+    print("+---+")
+    for y in range(py - 1, py + 2):
+        line = "|"
+        for x in range(px - 1, px + 2):
+            if 0 <= x < MAP_WIDTH and 0 <= y < MAP_HEIGHT:
+                if x == px and y == py:
+                    line += "M"
+                elif not fog[y][x]:
+                    line += game_map[y][x]
+                else:
+                    line += "?"
+            else:
+                line += " "
+        line += "|"
+        print(line)
+    print("+---+")
     return
 
 # This function shows the information for the player
@@ -169,15 +202,15 @@ while True:
                     print("------------------------Shop Menu------------------------")
                     pickaxe_lvl=player['pickaxe']
                     if pickaxe_lvl==1:
-                        print("(P)ickaxe upage to Level 2 to mine silver ore for 50GP")
+                        print("(P)ickaxe upgrade to Level 2 to mine silver ore for 50GP")
                     elif pickaxe_lvl==2:
-                        print("(P)ickaxe upage to Level 3 to mine silver ore for 150GP")
+                        print("(P)ickaxe upgrade to Level 3 to mine silver ore for 150GP")
                     elif pickaxe_lvl>=3:
                         print("(P)ickaxe is at max level.")
                     
                     cap=player.get("capacity",10)
                     upgrade_cost=cap*2
-                    print("(B)ackpack uprade to carry {:} items for {:} GP".format(cap+2,upgrade_cost))
+                    print("(B)ackpack upgrade to carry {:} items for {:} GP".format(cap+2,upgrade_cost))
                     print("(L)eave shop")
                     print("---------------------------------------------------------")
                     sell_ore(player)
