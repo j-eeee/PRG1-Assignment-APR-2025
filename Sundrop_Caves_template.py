@@ -44,24 +44,28 @@ def load_map(filename, map_struct):
 def clear_fog(fog, player):
     return
 
-def initialize_game(game_map, fog, player):
+def initialize_game(game_map, fog, player,name):
     # initialize map
-    load_map("level1.txt", game_map)
+    load_map("lvl 1.txt", game_map)
 
     # TODO: initialize fog
     for _ in range(MAP_HEIGHT):
         fog.append([True]*MAP_WIDTH)
     # TODO: initialize player
     #   You will probably add other entries into the player dictionary
+    player.clear()
+    player['name']=name
     player['x'] = 0
     player['y'] = 0
     player['copper'] = 0
     player['silver'] = 0
     player['gold'] = 0
-    player['GP'] = 0
+    player['GP'] = 67
     player['day'] = 1
     player['steps'] = 0
     player['turns'] = TURNS_PER_DAY
+    player['pickaxe'] = 1
+    player['capacity']=10
 
     clear_fog(fog, player)
     
@@ -75,6 +79,18 @@ def draw_view(game_map, fog, player):
 
 # This function shows the information for the player
 def show_information(player):
+    print("-----Player Information-----")
+    ore_type={1:"copper",2:"silver",3:"gold"}
+    current_ore=ore_type.get(player['pickaxe'],'unknow')
+    print("Name: {:}".format(player['name']))
+    print("Pickaxe level: {:} ({:}) ".format(player['pickaxe'],current_ore))
+    print("----------------------------")
+    total_load=player['copper']+player['silver']+player['gold']
+    print("Load: {:}/{:} ".format(total_load,player['capacity']))
+    print("----------------------------")
+    print("GP: {:}".format(player['GP']))
+    print("Steps taken: {:}".format(player['steps']))
+    print("----------------------------")
     return
 
 # This function saves the game
@@ -125,26 +141,76 @@ print("  and live happily ever after?")
 print("-----------------------------------------------------------")
 
 # TODO: The game!
+def sell_ore(player):
+    total_earned=0
 
-show_main_menu()
-choice1=input("Youe choice? ").strip().lower()
+    for mineral in ['copper','silver','gold']:
+        amount=player.get(mineral,0)
+        if amount>0:
+            low,high=prices[mineral]
+            price_per_unit=randint(low,high)
+            earned=amount*price_per_unit
+            total_earned+=earned
+            player[mineral]=0
+    player['GP']+=total_earned
+    print("GP: {:}".format(player['GP']))
 while True:
+    show_main_menu()
+    choice1=input("Youe choice? ").strip().lower()
     if choice1=="n":
         name=input("Greetings,miner!What is your Name?")
         print("Pleased to meet you,{:}. Welcome to Sundrop Town!".format(name))
-        initialize_game(game_map,fog,player)
+        initialize_game(game_map,fog,player,name)
         while True:
             show_town_menu()
             choice2=input("Your choice? ").strip().lower()
             if choice2=="b":
-                print("------------------------Shop Menu------------------------")
-                print("(P)ickaxe upage to Level 2 to mine silver ore for 50GP")
-                print("Backpack uprade to carry 12 times for 20 GP")
-                print("---------------------------------------------------------")
-                randint()
+                while True:
+                    print("------------------------Shop Menu------------------------")
+                    pickaxe_lvl=player['pickaxe']
+                    if pickaxe_lvl==1:
+                        print("(P)ickaxe upage to Level 2 to mine silver ore for 50GP")
+                    elif pickaxe_lvl==2:
+                        print("(P)ickaxe upage to Level 3 to mine silver ore for 150GP")
+                    elif pickaxe_lvl>=3:
+                        print("(P)ickaxe is at max level.")
+                    
+                    cap=player.get("capacity",10)
+                    upgrade_cost=cap*2
+                    print("(B)ackpack uprade to carry {:} items for {:} GP".format(cap+2,upgrade_cost))
+                    print("(L)eave shop")
+                    print("---------------------------------------------------------")
+                    sell_ore(player)
+                    choice3=input("Your choice? ").strip().lower()
+                    if choice3=='p':
+                        if pickaxe_lvl==1 and player['GP']>=50:
+                            player['GP']-=50
+                            player['pickaxe']=2
+                            print("Congratulations!You can now mine silver!")
+                        elif player.get('pickaxe',1)==2 and player['GP']>=150:
+                            player['GP']-=150
+                            player['pickaxe']=3
+                            print("Congratulations!You can now mine gold!")
+                        else:
+                            print("Not enough GP")
+                    elif choice3=="b":
+                        if player['GP']>=upgrade_cost:
+                            player['GP']-=upgrade_cost
+                            player['capacity']=cap+2
+                            print("Congratulations! You can now carry {:} items!".format(cap+2))
+                        else:
+                            print("Not enough GP.")
+                    elif choice3=="l":
+                        break
+                    else:
+                        print("Invalid choice")
+            elif choice2=='i':
+                show_information(player)
+            elif choice2=='q':
+                break
     elif choice1=="l":
-        load_game()
+        load_game(game_map,fog,player)
     elif choice1=="q":
         break
     else:
-        print("Invalid input.")
+        print("Invalid input. Please enter N, L ,Q only")
